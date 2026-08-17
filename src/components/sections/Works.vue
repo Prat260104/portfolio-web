@@ -119,17 +119,7 @@
               <div
                 class="flex-center z-10 aspect-4/3 size-full overflow-clip rounded-lg object-cover"
               >
-                <video
-                  v-if="work.videoSrc"
-                  ref="videoRefs"
-                  :src="work.videoSrc"
-                  muted
-                  :autoplay="false"
-                  type="video/webm"
-                  class="size-[80%] rounded-md object-contain blur transition-all duration-500 ease-in-out"
-                ></video>
                 <img
-                  v-else-if="work.imageSrc"
                   :src="work.imageSrc"
                   alt="work-preview"
                   class="max-h-[85%] max-w-[90%] rounded-md object-contain shadow-2xl transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -170,7 +160,7 @@
 <script setup lang="ts">
   import { animateSplitText } from '@/animations';
   import { textSplitterIntoChar } from '@/functions';
-  import { computed, onBeforeMount, onMounted, ref, useTemplateRef } from 'vue';
+  import { computed, onBeforeMount, onMounted, ref } from 'vue';
   import gsap from 'gsap';
   import { useWindowSize } from '@vueuse/core';
   import {
@@ -183,7 +173,6 @@
     workBg3,
     workBg4,
   } from '@/assets/images';
-  const videoRefs = useTemplateRef<HTMLVideoElement[]>('videoRefs');
 
   const isSmallScreen = computed(() => {
     return useWindowSize().width.value < 768;
@@ -328,40 +317,11 @@
     return tl;
   };
 
-  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-    entries.forEach((entry) => {
-      const video = entry.target as HTMLVideoElement;
-      if (entry.isIntersecting) {
-        video.play();
-        video.classList.remove('blur');
-      }
-    });
-  };
-
-  const stopAllVideos = () => {
-    videoRefs.value?.map((video: HTMLVideoElement) => {
-      if (video && !video.paused) {
-        video.pause();
-        video.currentTime = 0; // Reset video to the start
-      }
-    });
-  };
   onBeforeMount(() => {
     selectedWorks.value = textSplitterIntoChar('Selected Works / ', true);
   });
 
   onMounted(() => {
-    stopAllVideos();
-
-    const observer = new IntersectionObserver(handleIntersection, {
-      threshold: 0.75, // Trigger when 75% of the video is visible
-    });
-
-    // Observe each video element
-    videoRefs.value?.forEach((video) => {
-      observer.observe(video);
-    });
-
     animateSplitText(
       '#selectedWorks .letters',
       '#selected-works-text',
